@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>629</width>
+    <height>850</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Форма тестовая</string>
+  </property>
+  <widget class="QPushButton" name="buttonMedia">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>790</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Обновить БД</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="textBoxSearch">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>61</y>
+     <width>211</width>
+     <height>21</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>40</y>
+     <width>181</width>
+     <height>16</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Введите слово для поиска</string>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="comboBoxAcc">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>60</y>
+     <width>141</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>igor_artamonov48</string>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>zipkortnicks</string>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>30</y>
+     <width>201</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Выберите аккаунт для отслеживания</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="tableComments">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>90</y>
+     <width>581</width>
+     <height>691</height>
+    </rect>
+   </property>
+   <column>
+    <property name="text">
+     <string>Дата</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Текст</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Отправитель</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Ссылка на запись</string>
+    </property>
+   </column>
+  </widget>
+  <widget class="QPushButton" name="buttonHand">
+   <property name="geometry">
+    <rect>
+     <x>350</x>
+     <y>60</y>
+     <width>41</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>🔍</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="searchButton">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>790</y>
+     <width>141</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Поиск по новому словарю</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ABCchangeButton">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>820</y>
+     <width>81</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Словарь</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="autoButton">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>820</y>
+     <width>141</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Авторежим</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="findNewComButton">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>820</y>
+     <width>171</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Наличие новых комментариев</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="showCommentsButton">
+   <property name="geometry">
+    <rect>
+     <x>270</x>
+     <y>790</y>
+     <width>171</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Отобразить все найденные</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton">
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>820</y>
+     <width>75</width>
+     <height>23</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>PushButton</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
