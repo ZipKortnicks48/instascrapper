@@ -166,5 +166,14 @@ class bdAPI():
         cursor = conn.cursor()
         cursor.execute("UPDATE comments SET comment_new = '0' WHERE comment_id IN (SELECT comment_id FROM comments);")
         conn.commit()
+    #возвращает слова по строке поиска 
+    def getCommentHandsearch(self,word):
+        sqlite3.SQLITE_PRAGMA
+        conn = sqlite3.connect("instagram.db") 
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM comments WHERE comment_text LIKE '%"+word+"%';")
+        comments=cursor.fetchall()
+        conn.close()
+        return comments
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
     makeDB()  # то запускаем функцию main()

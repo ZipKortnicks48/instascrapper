@@ -30,6 +30,7 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         self.findNewComButton.pressed.connect(self.searchNewCommentsClick)
         self.autoButton.pressed.connect(self.autoClick)
         self.buttonStop.pressed.connect(self.stopClick)
+        self.buttonHand.pressed.connect(self.handSearch)
         #иконка трея
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
@@ -53,6 +54,22 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         tray_menu.addAction(quit_action)
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
+    #ручной поиск по словам 
+    def handSearch(self):
+        word=self.textBoxSearch.text()
+        username=self.comboBoxAcc.currentText()
+        self.handler=formHandler(username)
+        self.tableComments.clear()
+        comments=self.handler.bdAPI.getCommentHandsearch(word)
+        self.tableComments.setRowCount(len(comments))
+        row=0
+        for comment in comments:
+                self.tableComments.setItem(row, 0,  QtWidgets.QTableWidgetItem(datetime.fromtimestamp(comment[2]).strftime("%d-%m-%Y %H:%M")))
+                self.tableComments.setItem(row, 1,  QtWidgets.QTableWidgetItem(comment[1]))
+                self.tableComments.setItem(row, 3,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
+                row += 1
+        #self.handler.bdAPI.checkComments()
+        QMessageBox.about(self,"Уведомление","Поиск завершен")
     #остановка автопроцесса
     def stopClick(self):
         self.startEvent=False
