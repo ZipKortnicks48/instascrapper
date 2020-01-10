@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\SiroklasovA\Documents\UI\mainform.ui'
+# Form implementation generated from reading ui file 'C:\Users\zipko\OneDrive\Документы\git\instascrapper\mainform.ui'
 #
-# Created by: PyQt5 UI code generator 5.13.2
+# Created by: PyQt5 UI code generator 5.13.0
 #
 # WARNING! All changes made in this file will be lost!
 
@@ -13,13 +13,10 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(629, 850)
+        Dialog.resize(629, 638)
         self.buttonMedia = QtWidgets.QPushButton(Dialog)
-        self.buttonMedia.setGeometry(QtCore.QRect(20, 790, 81, 23))
+        self.buttonMedia.setGeometry(QtCore.QRect(20, 570, 81, 23))
         self.buttonMedia.setObjectName("buttonMedia")
-        self.buttonStop = QtWidgets.QPushButton(Dialog)
-        self.buttonStop.setGeometry(QtCore.QRect(110, 820, 75, 23))
-        self.buttonStop.setObjectName("buttonStop")
         self.textBoxSearch = QtWidgets.QLineEdit(Dialog)
         self.textBoxSearch.setGeometry(QtCore.QRect(390, 61, 211, 21))
         self.textBoxSearch.setObjectName("textBoxSearch")
@@ -35,7 +32,7 @@ class Ui_Dialog(object):
         self.label_2.setGeometry(QtCore.QRect(20, 30, 201, 20))
         self.label_2.setObjectName("label_2")
         self.tableComments = QtWidgets.QTableWidget(Dialog)
-        self.tableComments.setGeometry(QtCore.QRect(20, 90, 581, 691))
+        self.tableComments.setGeometry(QtCore.QRect(20, 90, 581, 471))
         self.tableComments.setObjectName("tableComments")
         self.tableComments.setColumnCount(4)
         self.tableComments.setRowCount(0)
@@ -51,32 +48,34 @@ class Ui_Dialog(object):
         self.buttonHand.setGeometry(QtCore.QRect(350, 60, 41, 23))
         self.buttonHand.setObjectName("buttonHand")
         self.searchButton = QtWidgets.QPushButton(Dialog)
-        self.searchButton.setGeometry(QtCore.QRect(460, 790, 141, 23))
+        self.searchButton.setGeometry(QtCore.QRect(460, 570, 141, 23))
         self.searchButton.setObjectName("searchButton")
         self.ABCchangeButton = QtWidgets.QPushButton(Dialog)
-        self.ABCchangeButton.setGeometry(QtCore.QRect(20, 820, 81, 23))
+        self.ABCchangeButton.setGeometry(QtCore.QRect(20, 600, 81, 23))
         self.ABCchangeButton.setObjectName("ABCchangeButton")
         self.autoButton = QtWidgets.QPushButton(Dialog)
-        self.autoButton.setGeometry(QtCore.QRect(460, 820, 141, 23))
+        self.autoButton.setGeometry(QtCore.QRect(460, 600, 141, 23))
         self.autoButton.setObjectName("autoButton")
         self.findNewComButton = QtWidgets.QPushButton(Dialog)
-        self.findNewComButton.setGeometry(QtCore.QRect(270, 820, 171, 23))
+        self.findNewComButton.setGeometry(QtCore.QRect(270, 600, 171, 23))
         self.findNewComButton.setObjectName("findNewComButton")
         self.showCommentsButton = QtWidgets.QPushButton(Dialog)
-        self.showCommentsButton.setGeometry(QtCore.QRect(270, 790, 171, 23))
+        self.showCommentsButton.setGeometry(QtCore.QRect(270, 570, 171, 23))
         self.showCommentsButton.setObjectName("showCommentsButton")
+        self.buttonStop = QtWidgets.QPushButton(Dialog)
+        self.buttonStop.setGeometry(QtCore.QRect(110, 600, 75, 23))
+        self.buttonStop.setObjectName("buttonStop")
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "InstagramScrapper48"))
+        Dialog.setWindowTitle(_translate("Dialog", "Форма тестовая"))
         self.buttonMedia.setText(_translate("Dialog", "Обновить БД"))
-        self.buttonStop.setText(_translate("Dialog", "Остановить"))
         self.label.setText(_translate("Dialog", "Введите слово для поиска"))
         self.comboBoxAcc.setItemText(0, _translate("Dialog", "igor_artamonov48"))
-        #self.comboBoxAcc.setItemText(1, _translate("Dialog", "zipkortnicks"))
+        self.comboBoxAcc.setItemText(1, _translate("Dialog", "zipkortnicks"))
         self.label_2.setText(_translate("Dialog", "Выберите аккаунт для отслеживания"))
         item = self.tableComments.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "Дата"))
@@ -92,3 +91,4 @@ class Ui_Dialog(object):
         self.autoButton.setText(_translate("Dialog", "Авторежим"))
         self.findNewComButton.setText(_translate("Dialog", "Наличие новых комментариев"))
         self.showCommentsButton.setText(_translate("Dialog", "Отобразить все найденные"))
+        self.buttonStop.setText(_translate("Dialog", "Остановить"))

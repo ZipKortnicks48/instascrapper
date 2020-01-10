@@ -18,6 +18,7 @@ from email.header    import Header
 import threading
 from threading import Thread
 import schedule
+import time
 class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,QtWidgets.QErrorMessage):
     def __init__(self):
         # Это здесь нужно для доступа к переменным, методам
@@ -85,8 +86,8 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         self.autoButton.setEnabled(False)
         self.findNewComButton.setEnabled(False)
         self.buttonMedia.setEnabled(False)
-        #QMessageBox.about(self,"Уведомление","Запущен авто-режим. Некоторые действия недоступны. Уведомления об отслеживании будут приходить на почту.")
-        thread = Thread(target=self.jobThread, daemon=False)
+        QMessageBox.about(self,"Уведомление","Запущен авто-режим. Некоторые действия недоступны. Уведомления об отслеживании будут приходить на почту.")
+        thread = Thread(target=self.jobThread, daemon=True)
         thread.start()
     #поток авторежима
     def jobThread(self):
@@ -99,48 +100,29 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         #         QMessageBox.about(self,"Уведомление",str(e))
         #         time.sleep(600)
         #         continue
-        
-        job1=schedule.every(5).minutes.do(self.jobException)
-        try:
-            while self.startEvent==True:
-                schedule.run_pending()
-                time.sleep(1)
-        except Exception as e: 
-                self.writeReport("Ошибка в планировщике: "+str(e))
-                schedule.cancel_job(job1)
-                self.writeReport("Отмена планировщика и перезапуск.")
-                self.autoClick()
-    def jobException(self):
-        try:
-            self.job()
-        except Exception as e:
-            self.writeReport("Ошибка в цикле авторежима: "+str(e))
+        schedule.every(5).minutes.do(self.job)
+        while self.startEvent==True:
+            schedule.run_pending()
+            time.sleep(1)
     #циклы авторежима
     def job(self):  
             username=self.comboBoxAcc.currentText()
             self.handler=formHandler(username)
-            self.handler.bdAPI.commentsUnNew()#комментарии прочитаны БД
+            self.handler.bdAPI.commentsUnNew()#комментарии прочитаны
             self.handler.searchAndAddNewMediaItems()
-            self.writeReport("Записи взяты")
             rows=self.handler.bdAPI.getMediaIds()
-            self.writeReport("Столбцы взяты")#отсюда отваливалось
             for row in rows:
                 commentsOld=self.handler.bdAPI.takeOldCommentsIds(row[0])#старые 50
-                self.writeReport("Взяты старые 50")
                 commentsOldN=list(map(lambda x: int(x[0]),commentsOld))
-                self.writeReport("Преобразованы")
                 commentsNew=self.handler.f.takeCommentsWithoutCircle(row[0],50)#новые 50
-                self.writeReport("Взяты новые коменты")
                 for comment in commentsNew:
                     if comment['pk'] in commentsOldN:
                         break
                     else:
                         self.handler.bdAPI.addComment(comment,row[0])#добавляем в базу новые комментарии
-            self.writeReport("Комменты сверены")
             self.handler.bdAPI.checkNewComments()#отмечает все новые комменты по словарю
-            self.writeReport("Комменты чекнуты")
             rows=self.handler.bdAPI.showGoodNewComments()#получает новые и отмеченные для единовременной их отправки на почту
-            self.writeReport("Новые подходящие комменты")
+            self.writeReport("Успешный цикл проверки")
             if len(rows)!=0:
                 host = "smtp.yandex.ru"
                 subject = "Test email from Python"
@@ -295,23 +277,16 @@ class formHandler():
         self.asyncLoadAllMediaInfo(name)  
         self.loadComments()
         self.bdAPI.checkComments()
-    def writeReport(self,text):
-        now=datetime.now()
-        with open('report.info' , 'a') as file:
-            file.write('\n%s\t%s'%(now.strftime("%d-%m-%Y %H:%M"),text)) #дозапись в файл
     #проверка на наличие новой записи стены
     def searchAndAddNewMediaItems(self):
         oldMediaIds=self.bdAPI.getMediaIds()
-        self.writeReport("ВЗятые старые ИД")
         newMediaIds=self.f.findNewFeed()
-        self.writeReport("Взята стена")
         oldMediaIds=list(map(lambda x: int(x[0]),oldMediaIds))
-        self.writeReport("Преобразованы")
         for media in newMediaIds:
             if media['pk'] in oldMediaIds:
                 break
             else:
                 self.bdAPI.addMediaItem(media)
-        self.writeReport("Окончено")                
+                        
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
     main()  # то запускаем функцию main()

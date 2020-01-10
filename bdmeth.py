@@ -159,6 +159,7 @@ class bdAPI():
         cursor = conn.cursor()
         cursor.execute("UPDATE comments SET comment_meet = '0' WHERE comment_id IN (SELECT comment_id FROM comments);")
         conn.commit()
+        conn.close()
     #отмечает прочитанные комменты
     def commentsUnNew(self):
         sqlite3.SQLITE_PRAGMA
@@ -166,6 +167,7 @@ class bdAPI():
         cursor = conn.cursor()
         cursor.execute("UPDATE comments SET comment_new = '0' WHERE comment_id IN (SELECT comment_id FROM comments);")
         conn.commit()
+        conn.close()
     #возвращает слова по строке поиска 
     def getCommentHandsearch(self,word):
         sqlite3.SQLITE_PRAGMA
