@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'C:\Users\zipko\OneDrive\Документы\git\instascrapper\mainform.ui'
+# Form implementation generated from reading ui file 'mainform.ui'
 #
 # Created by: PyQt5 UI code generator 5.13.0
 #
@@ -13,10 +13,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Dialog(object):
     def setupUi(self, Dialog):
         Dialog.setObjectName("Dialog")
-        Dialog.resize(629, 638)
-        self.buttonMedia = QtWidgets.QPushButton(Dialog)
-        self.buttonMedia.setGeometry(QtCore.QRect(20, 570, 81, 23))
-        self.buttonMedia.setObjectName("buttonMedia")
+        Dialog.setFixedSize(629, 638)
         self.textBoxSearch = QtWidgets.QLineEdit(Dialog)
         self.textBoxSearch.setGeometry(QtCore.QRect(390, 61, 211, 21))
         self.textBoxSearch.setObjectName("textBoxSearch")
@@ -44,39 +41,35 @@ class Ui_Dialog(object):
         self.tableComments.setHorizontalHeaderItem(1, item)
         item = QtWidgets.QTableWidgetItem()
         self.tableComments.setHorizontalHeaderItem(2, item)
-        item = QtWidgets.QTableWidgetItem()
-        self.tableComments.setHorizontalHeaderItem(3, item)
         self.buttonHand = QtWidgets.QPushButton(Dialog)
         self.buttonHand.setGeometry(QtCore.QRect(350, 60, 41, 23))
         self.buttonHand.setObjectName("buttonHand")
-        self.searchButton = QtWidgets.QPushButton(Dialog)
-        self.searchButton.setGeometry(QtCore.QRect(460, 570, 141, 23))
-        self.searchButton.setObjectName("searchButton")
-        self.ABCchangeButton = QtWidgets.QPushButton(Dialog)
-        self.ABCchangeButton.setGeometry(QtCore.QRect(20, 600, 81, 23))
-        self.ABCchangeButton.setObjectName("ABCchangeButton")
         self.autoButton = QtWidgets.QPushButton(Dialog)
         self.autoButton.setGeometry(QtCore.QRect(460, 600, 141, 23))
         self.autoButton.setObjectName("autoButton")
         self.findNewComButton = QtWidgets.QPushButton(Dialog)
-        self.findNewComButton.setGeometry(QtCore.QRect(270, 600, 171, 23))
+        self.findNewComButton.setGeometry(QtCore.QRect(460, 570, 141, 23))
         self.findNewComButton.setObjectName("findNewComButton")
         self.showCommentsButton = QtWidgets.QPushButton(Dialog)
-        self.showCommentsButton.setGeometry(QtCore.QRect(270, 570, 171, 23))
+        self.showCommentsButton.setGeometry(QtCore.QRect(314, 60, 41, 23))
         self.showCommentsButton.setObjectName("showCommentsButton")
-        self.buttonStop = QtWidgets.QPushButton(Dialog)
-        self.buttonStop.setGeometry(QtCore.QRect(110, 600, 75, 23))
-        self.buttonStop.setObjectName("buttonStop")
-
+        menubar = self.menuBar()
+        self.fileMenu = menubar.addMenu('Опции')
+        self.newBDItem=self.fileMenu.addAction("Обновить базу данных пользователя")
+        self.newABCItem=self.fileMenu.addAction("Словарь")
+        self.newAddressItem=self.fileMenu.addAction("Адресная книга")
+        self.helpMenu=menubar.addMenu("Помощь")
+        # toolbar = self.addToolBar('Exit')
+        # toolbar.addAction(exitAction)
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Instascrapper48"))
-        self.buttonMedia.setText(_translate("Dialog", "Обновить БД"))
+        Dialog.setWindowTitle(_translate("Dialog", "Instascrapper"))
         self.label.setText(_translate("Dialog", "Введите слово для поиска"))
         self.comboBoxAcc.setItemText(0, _translate("Dialog", "igor_artamonov48"))
+        self.comboBoxAcc.setItemText(1, _translate("Dialog", "igor_artamonov48"))
         self.label_2.setText(_translate("Dialog", "Выберите аккаунт для отслеживания"))
         item = self.tableComments.horizontalHeaderItem(0)
         item.setText(_translate("Dialog", "Дата"))
@@ -87,9 +80,6 @@ class Ui_Dialog(object):
         item = self.tableComments.horizontalHeaderItem(2)
         item.setText(_translate("Dialog", "Ссылка на запись"))
         self.buttonHand.setText(_translate("Dialog", "🔍"))
-        self.searchButton.setText(_translate("Dialog", "Поиск по новому словарю"))
-        self.ABCchangeButton.setText(_translate("Dialog", "Словарь"))
         self.autoButton.setText(_translate("Dialog", "Авторежим"))
-        self.findNewComButton.setText(_translate("Dialog", "Наличие новых комментариев"))
-        self.showCommentsButton.setText(_translate("Dialog", "Отобразить все найденные"))
-        self.buttonStop.setText(_translate("Dialog", "Остановить"))
+        self.findNewComButton.setText(_translate("Dialog", "Проверить страницу"))
+        self.showCommentsButton.setText(_translate("Dialog", "🕮"))

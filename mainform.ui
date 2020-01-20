@@ -90,11 +90,6 @@
    </column>
    <column>
     <property name="text">
-     <string>Отправитель</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
      <string>Ссылка на запись</string>
     </property>
    </column>

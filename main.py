@@ -3,6 +3,7 @@
 # vim:fileencoding=utf-8
 import sys  # sys нужен для передачи argv в QApplication
 from PyQt5 import QtWidgets
+from PyQt5 import QtCore
 import mainform  # Это наш конвертированный файл дизайна
 from finder import Finder
 from bdmeth import bdAPI
@@ -13,11 +14,13 @@ from PyQt5.QtWidgets import QMessageBox, QSystemTrayIcon,QStyle,QAction,qApp,QMe
 import time
 import sched
 import smtplib
+import mailbook
 from email.mime.text import MIMEText
 from email.header    import Header
 import threading
 from threading import Thread
 import schedule
+import abcform
 class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,QtWidgets.QErrorMessage,QtWidgets.QHeaderView):
     def __init__(self):
         # Это здесь нужно для доступа к переменным, методам
@@ -25,12 +28,9 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         super().__init__()
         self.startEvent = True
         self.setupUi(self)  # Это нужно для инициализации нашего дизайна
-        self.buttonMedia.pressed.connect(self.btnMediaClick)
-        self.searchButton.pressed.connect(self.searchButtonClick)
         self.showCommentsButton.pressed.connect(self.showCommentsButtonClick)
-        self.findNewComButton.pressed.connect(self.searchNewCommentsClick)
+        self.findNewComButton.pressed.connect(self.searchNewCommentsClickInThread)
         self.autoButton.pressed.connect(self.autoClick)
-        self.buttonStop.pressed.connect(self.stopClick)
         self.buttonHand.pressed.connect(self.handSearch)
         #иконка трея
         self.tray_icon = QSystemTrayIcon(self)
@@ -55,6 +55,15 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         tray_menu.addAction(quit_action)
         self.tray_icon.setContextMenu(tray_menu)
         self.tray_icon.show()
+        self.newBDItem.triggered.connect(self.btnMediaClick)
+        self.newABCItem.triggered.connect(self.showNewABCWindow)
+        self.newAddressItem.triggered.connect(self.showNewAddressWindow)
+    def showNewABCWindow(self):
+        self.windowABC = AppABC()  # Создаём объект класса ExampleApp
+        self.windowABC.show()  # Показываем окно
+    def showNewAddressWindow(self):
+        self.windowEmail = AppEmail()  # Создаём объект класса ExampleApp
+        self.windowEmail.show()  # Показываем окно
     #ручной поиск по словам 
     def handSearch(self):
         word=self.textBoxSearch.text()
@@ -75,17 +84,13 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
     def stopClick(self):
         self.startEvent=False
     def enableButtons(self):
-        self.buttonStop.setEnabled(False)
         self.autoButton.setEnabled(True)
         self.findNewComButton.setEnabled(True)
-        self.buttonMedia.setEnabled(True)
     #обработчик кнопки "Авторежим"
     def autoClick(self):
         self.startEvent=True
-        self.buttonStop.setEnabled(True)
         self.autoButton.setEnabled(False)
         self.findNewComButton.setEnabled(False)
-        self.buttonMedia.setEnabled(False)
         QMessageBox.about(self,"Уведомление","Запущен авто-режим. Некоторые действия недоступны. Уведомления об отслеживании будут приходить на почту.")
         thread = Thread(target=self.jobThread,daemon=True)
         thread.start()
@@ -93,7 +98,7 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
     def jobThread(self):
         username=self.comboBoxAcc.currentText()
         self.handler=formHandler(username)
-        schedule.every(1).minutes.do(self.job)
+        schedule.every(1).minutes.do(self.jobException)
         while self.startEvent==True:
             schedule.run_pending()
             time.sleep(1)
@@ -128,27 +133,29 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
             if len(rows)!=0:
                 host = "smtp.yandex.ru"
                 subject = "Test email from Python"
-                to_addr = "alex.sirokvasoff2011@yandex.ru"
+                to_addr = self.handler.bdAPI.getMail()
                 from_addr = "instagram@rkvv.ru"
                 error=0
                 self.writeReport("Найдено (%s) комментариев(комментарий)."%str(len(rows)))
-                self.send_email(rows,host, subject, to_addr, from_addr)
+                self.send_email(rows,host, to_addr, from_addr)
             else:
                 self.writeReport("Подходящие комментарии не обнаружены.")
             self.handler.bdAPI.commentsUnNew()#комментарии прочитаны
             self.writeReport("Успешный цикл авторежима.")
     #отправка сообщения на имейл
-    def send_email(self,rows,host, subject, to_addr, from_addr): 
+    def send_email(self,rows,host, to_addr, from_addr): 
+        to_addr=list(map(lambda x: x[0],to_addr))
         body_text="На странице были отслежены следующие комментарии:\n"
         for row in rows:
             body_text+="\nТекст комментария:\n%s\nСсылка на запись в инстаграм:\n%s\nВремя публикации:\n%s\n"%(row[1],self.handler.bdAPI.getLinkByCommentId(row[0]),datetime.fromtimestamp(row[2]).strftime("%d-%m-%Y %H:%M"))
         msg = MIMEText(body_text, 'plain', 'utf-8')
         msg['Subject'] = Header('Обнаружение комментариев', 'utf-8')
         msg['From'] = from_addr     
-        msg['To'] = to_addr
+        separator=", "
+        msg['To'] = separator.join(to_addr)
         server = smtplib.SMTP_SSL(host,port=465)
         server.login('instagram@rkvv.ru','asdqwe123')
-        server.sendmail(from_addr, [to_addr], msg.as_string())
+        server.sendmail(from_addr, to_addr, msg.as_string())
         server.quit()
         self.writeReport("Успешная рассылка.")
     #отобразить найденные комменты по словарю
@@ -170,25 +177,22 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
     def searchButtonClick(self):
         username=self.comboBoxAcc.currentText()
         self.handler=formHandler(username)
-        QMessageBox.about(self,"Уведомление","Ищем по новому словарю") 
+        #QMessageBox.about(self,"Уведомление","Ищем по новому словарю") 
         self.handler.bdAPI.checkComments()
-        QMessageBox.about(self,"Уведомление","Поиск завершен")
+        #QMessageBox.about(self,"Уведомление","Поиск завершен")
     #обновление базы
     def btnMediaClick(self):
         self.buttonMedia.setEnabled(False)
         username=self.comboBoxAcc.currentText()
         self.handler=formHandler(username)
-        QMessageBox.about(self,"Уведомление","Старт обновления БД") 
+        QMessageBox.about(self,"Уведомление","Старт обновления БД. Не закрывайте окно") 
         try:
             self.handler.LoadAll(username)
-            self.buttonMedia.setDisabled(False)
         except Exception as e:
             self.writeReport(str(e))
             QMessageBox.about(self,"Ошибка получения записей",str(e))
-            self.buttonMedia.setEnabled(True)
             return
         QMessageBox.about(self,"Успешно","База данных комментариев успешно обновлена")
-        self.buttonMedia.setEnabled(True)
         return
     #событие закрытия окна
     def closeEvent(self, event):
@@ -201,15 +205,29 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
             2000
             )
     #поиск новых комментариев
+
+    def searchNewCommentsClickInThread(self):
+        try:
+            QMessageBox.about(self,"Уведомление","Поиск новых комментариев") 
+            thread = Thread(target=self.searchNewCommentsClick,daemon=True)
+            thread.start()
+        except Exception as e:
+            self.writeReport(str(e))
+            QMessageBox.about(self,"Уведомление",str(e))
+            self.findNewComButton.setEnabled(True)  
     def searchNewCommentsClick(self):
-      try:
+      
         self.findNewComButton.setEnabled(False)
+        self.autoButton.setEnabled(False)
         self.tableComments.clear()
+        self.setHeaderTittle()
         username=self.comboBoxAcc.currentText()
         self.handler=formHandler(username)
         self.handler.searchAndAddNewMediaItems()
-        QMessageBox.about(self,"Уведомление","Поиск новых комментариев") 
+
+        self.setHeaderTittle()
         rows=self.handler.findAbcAllCommentsAndSendIt()
+        self.tableComments.setRowCount(len(rows))
         i=0
         for comment in rows:
                 self.tableComments.setItem(i, 0,  QtWidgets.QTableWidgetItem(datetime.fromtimestamp(comment[2]).strftime("%d-%m-%Y %H:%M")))
@@ -217,17 +235,52 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
                 self.tableComments.setItem(i, 2,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
                 i += 1
         self.setHeaderTittle()
-        QMessageBox.about(self,"Уведомление","Поиск завершен")
+        # QMessageBox.about(self,"Уведомление","Поиск завершен")
         self.findNewComButton.setEnabled(True)
-      except Exception as e:
-        self.writeReport(str(e))
-        QMessageBox.about(self,"Уведомление",str(e))
-        self.findNewComButton.setEnabled(True)   
+        self.autoButton.setEnabled(True)
+        self.searchButtonClick()
+       
+
+
     def writeReport(self,text):
         now=datetime.now()
         with open('report.info' , 'a') as file:
             file.write('\n%s\t%s'%(now.strftime("%d-%m-%Y %H:%M"),text)) #дозапись в файл
-
+class AppABC(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, abcform.Ui_DialogABC,QtWidgets.QErrorMessage,QtWidgets.QHeaderView):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.bdAPI=bdAPI()
+        self.showABC()
+        self.editABCButton.pressed.connect(self.saveWords)
+    def showABC(self):
+        words=self.bdAPI.getABC()
+        for word in words:
+            self.textEdit.append(word[0])
+    def saveWords(self):
+        try:
+            s=self.textEdit.toPlainText()
+            strList=s.split('\n') 
+            self.bdAPI.updateABC(strList)
+            self.bdAPI.checkComments()
+            QMessageBox.about(self,"Обновление словаря","Словарь обновлен")
+        except Exception as e:
+            QMessageBox.about(self,"Обновление словаря",str(e))
+class AppEmail(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mailbook.Ui_DialogEmail,QtWidgets.QErrorMessage,QtWidgets.QHeaderView):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
+        self.bdAPI=bdAPI()
+        self.showMails()
+        self.editEmailButton.pressed.connect(self.saveWords)
+    def showMails(self):
+        words=self.bdAPI.getMail()
+        for word in words:
+            self.textEdit.append(word[0])
+    def saveWords(self):
+        s=self.textEdit.toPlainText()
+        strList=s.split('\n') 
+        self.bdAPI.updateMail(strList)
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     window = App()  # Создаём объект класса ExampleApp
@@ -305,5 +358,8 @@ class formHandler():
                 break
             else:
                 self.bdAPI.addMediaItem(media)            
+
+
+
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
     main()  # то запускаем функцию main()

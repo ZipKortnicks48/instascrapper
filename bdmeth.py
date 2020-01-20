@@ -16,6 +16,8 @@ def makeDB():
     cursor.execute("CREATE TABLE IF NOT EXISTS comments (comment_id text primary key, comment_text text, comment_date integer, media_id text, comment_meet integer DEFAULT 0, comment_new integer DEFAULT 0, FOREIGN KEY (media_id) REFERENCES media (media_id) )")
     # Создание таблицы словаря
     cursor.execute("CREATE TABLE IF NOT EXISTS abc (abc_id text primary key, abc_text text)")
+    # Создание таблицы адресов
+    cursor.execute("CREATE TABLE IF NOT EXISTS emails (email_id text primary key, email_text text)")
 class bdAPI():
     def __init__(self):
         sqlite3.SQLITE_PRAGMA
@@ -177,5 +179,51 @@ class bdAPI():
         comments=cursor.fetchall()
         conn.close()
         return comments
+    #возвращает словарь
+    def getABC(self):
+        sqlite3.SQLITE_PRAGMA
+        conn = sqlite3.connect("instagram.db") 
+        cursor = conn.cursor()
+        cursor.execute("SELECT abc_text FROM abc;")
+        abc=cursor.fetchall()
+        conn.close()
+        return abc
+    def updateABC(self,strings):
+        sqlite3.SQLITE_PRAGMA
+        conn = sqlite3.connect("instagram.db") 
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM abc;")
+        conn.commit()
+        i=0
+        for s in strings:
+            if s != "": 
+                cursor.execute("INSERT into abc values ('%s','%s');"%(i,s))
+            i+=1
+        conn.commit()
+        conn.close()
+        #возвращает адреса
+    def getMail(self):
+        sqlite3.SQLITE_PRAGMA
+        conn = sqlite3.connect("instagram.db") 
+        cursor = conn.cursor()
+        cursor.execute("SELECT email_text FROM emails;")
+        emails=cursor.fetchall()
+        conn.close()
+        return emails
+    def updateMail(self,strings):
+        sqlite3.SQLITE_PRAGMA
+        conn = sqlite3.connect("instagram.db") 
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM emails;")
+        conn.commit()
+        i=0
+        for s in strings:
+            if s != "": 
+                cursor.execute("INSERT into emails values ('%s','%s');"%(i,s))
+            i+=1
+        conn.commit()
+        conn.close()
+        
+    
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
     makeDB()  # то запускаем функцию main()
