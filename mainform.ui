@@ -13,19 +13,6 @@
   <property name="windowTitle">
    <string>Форма тестовая</string>
   </property>
-  <widget class="QPushButton" name="buttonMedia">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>570</y>
-     <width>81</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Обновить БД</string>
-   </property>
-  </widget>
   <widget class="QLineEdit" name="textBoxSearch">
    <property name="geometry">
     <rect>
@@ -125,32 +112,6 @@
     <string>🔍</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="searchButton">
-   <property name="geometry">
-    <rect>
-     <x>460</x>
-     <y>570</y>
-     <width>141</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Поиск по новому словарю</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="ABCchangeButton">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>600</y>
-     <width>81</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Словарь</string>
-   </property>
-  </widget>
   <widget class="QPushButton" name="autoButton">
    <property name="geometry">
     <rect>
@@ -167,40 +128,27 @@
   <widget class="QPushButton" name="findNewComButton">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>600</y>
-     <width>171</width>
+     <x>460</x>
+     <y>570</y>
+     <width>141</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>Наличие новых комментариев</string>
+    <string>Проверить страницу</string>
    </property>
   </widget>
   <widget class="QPushButton" name="showCommentsButton">
    <property name="geometry">
     <rect>
-     <x>270</x>
-     <y>570</y>
-     <width>171</width>
+     <x>314</x>
+     <y>60</y>
+     <width>41</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
-    <string>Отобразить все найденные</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="pushButton">
-   <property name="geometry">
-    <rect>
-     <x>110</x>
-     <y>600</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>PushButton</string>
+    <string>🕮</string>
    </property>
   </widget>
  </widget>

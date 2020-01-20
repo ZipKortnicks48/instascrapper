@@ -5,7 +5,7 @@ import datetime
 import os.path
 import logging
 import argparse
-
+import time
 import sys  # sys нужен для передачи argv в QApplication
 from PyQt5 import QtWidgets
 import mainform  # Это наш конвертированный файл дизайна
@@ -34,6 +34,7 @@ def onlogin_callback(api, new_settings_file):
 class Finder(object):
     def __init__(self,id):
         self.__getMyWebAPI()#в конструкторе сразу получим доступ к апи и доступ к айд отслеживаемого пользователя
+        time.sleep(0.2)
         self.userId=id
     def __getMyWebAPI(self):
         #self.myWebAPI = Client(username="vodokanallipetsk", password = "Djljrfyfk48")
@@ -95,19 +96,25 @@ class Finder(object):
     def findFeed(self,next):
         if next!=-1 and next!=-2: 
             feed = self.myWebAPI.user_feed(self.userId,max_id=next)
+            time.sleep(0.2)
         else:
             feed = self.myWebAPI.user_feed(self.userId)
+            time.sleep(0.2)
         return feed['items'],feed.get('next_max_id',-2)
     def findComments(self,media_id,next):
         if next!=-1 and next!=-2: 
             comments = self.myWebAPI.media_comments(media_id,max_id=next)
+            time.sleep(0.2)
         else:
             comments = self.myWebAPI.media_comments(media_id)
+            time.sleep(0.2)
         return comments['comments'],comments.get('next_max_id',-2)
     def takeCommentsWithoutCircle(self,media_id,comment_count):
         comments = self.myWebAPI.media_n_comments(media_id,n=comment_count,reverse=True)
+        time.sleep(0.2)
         return comments
     def findNewFeed(self):
         feed = self.myWebAPI.user_feed(self.userId)
+        time.sleep(0.2)
         return feed['items']
         

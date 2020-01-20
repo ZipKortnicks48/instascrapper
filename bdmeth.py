@@ -63,7 +63,7 @@ class bdAPI():
         sqlite3.SQLITE_PRAGMA
         conn = sqlite3.connect("instagram.db") 
         cursor = conn.cursor()
-        cursor.execute("INSERT into comments values ('%s','%s','%s','%s',0,1);"%(comment['pk'],comment['text'],comment['created_at'],media_id))
+        cursor.execute("INSERT into comments values ('%s','%s','%s','%s',0,1);"%(comment['pk'],comment['text'].lower(),comment['created_at'],media_id))
         conn.commit()
         conn.close()
     #тащит все последние комменты айди (по 60 штук) из базы

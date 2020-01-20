@@ -18,7 +18,7 @@ from email.header    import Header
 import threading
 from threading import Thread
 import schedule
-class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,QtWidgets.QErrorMessage):
+class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,QtWidgets.QErrorMessage,QtWidgets.QHeaderView):
     def __init__(self):
         # Это здесь нужно для доступа к переменным, методам
         # и т.д. в файле design.py
@@ -67,13 +67,14 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         for comment in comments:
                 self.tableComments.setItem(row, 0,  QtWidgets.QTableWidgetItem(datetime.fromtimestamp(comment[2]).strftime("%d-%m-%Y %H:%M")))
                 self.tableComments.setItem(row, 1,  QtWidgets.QTableWidgetItem(comment[1]))
-                self.tableComments.setItem(row, 3,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
+                self.tableComments.setItem(row, 2,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
                 row += 1
-        #self.handler.bdAPI.checkComments()
+        self.setHeaderTittle()
         QMessageBox.about(self,"Уведомление","Поиск завершен")
     #остановка автопроцесса
     def stopClick(self):
         self.startEvent=False
+    def enableButtons(self):
         self.buttonStop.setEnabled(False)
         self.autoButton.setEnabled(True)
         self.findNewComButton.setEnabled(True)
@@ -85,62 +86,45 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         self.autoButton.setEnabled(False)
         self.findNewComButton.setEnabled(False)
         self.buttonMedia.setEnabled(False)
-        #QMessageBox.about(self,"Уведомление","Запущен авто-режим. Некоторые действия недоступны. Уведомления об отслеживании будут приходить на почту.")
-        thread = Thread(target=self.jobThread, daemon=False)
+        QMessageBox.about(self,"Уведомление","Запущен авто-режим. Некоторые действия недоступны. Уведомления об отслеживании будут приходить на почту.")
+        thread = Thread(target=self.jobThread,daemon=True)
         thread.start()
     #поток авторежима
     def jobThread(self):
-        # while self.startEvent==True:
-        #     try:
-        #         self.job()
-        #         time.sleep(120)
-        #     except Exception as e:
-        #         self.writeReport(str(e))
-        #         QMessageBox.about(self,"Уведомление",str(e))
-        #         time.sleep(600)
-        #         continue
-        
-        job1=schedule.every(5).minutes.do(self.jobException)
-        try:
-            while self.startEvent==True:
-                schedule.run_pending()
-                time.sleep(1)
-        except Exception as e: 
-                self.writeReport("Ошибка в планировщике: "+str(e))
-                schedule.cancel_job(job1)
-                self.writeReport("Отмена планировщика и перезапуск.")
-                self.autoClick()
+        username=self.comboBoxAcc.currentText()
+        self.handler=formHandler(username)
+        schedule.every(1).minutes.do(self.job)
+        while self.startEvent==True:
+            schedule.run_pending()
+            time.sleep(1)
+        #self.jobException()
     def jobException(self):
         try:
             self.job()
         except Exception as e:
             self.writeReport("Ошибка в цикле авторежима: "+str(e))
+            time.sleep(600)
+    def setHeaderTittle(self):
+        self.tableComments.setHorizontalHeaderLabels(['Дата', 'Текст', 'Ссылка на запись'])
     #циклы авторежима
     def job(self):  
             username=self.comboBoxAcc.currentText()
+            self.handler=None
             self.handler=formHandler(username)
             self.handler.bdAPI.commentsUnNew()#комментарии прочитаны БД
             self.handler.searchAndAddNewMediaItems()
-            self.writeReport("Записи взяты")
             rows=self.handler.bdAPI.getMediaIds()
-            self.writeReport("Столбцы взяты")#отсюда отваливалось
             for row in rows:
                 commentsOld=self.handler.bdAPI.takeOldCommentsIds(row[0])#старые 50
-                self.writeReport("Взяты старые 50")
                 commentsOldN=list(map(lambda x: int(x[0]),commentsOld))
-                self.writeReport("Преобразованы")
                 commentsNew=self.handler.f.takeCommentsWithoutCircle(row[0],50)#новые 50
-                self.writeReport("Взяты новые коменты")
                 for comment in commentsNew:
                     if comment['pk'] in commentsOldN:
                         break
                     else:
                         self.handler.bdAPI.addComment(comment,row[0])#добавляем в базу новые комментарии
-            self.writeReport("Комменты сверены")
             self.handler.bdAPI.checkNewComments()#отмечает все новые комменты по словарю
-            self.writeReport("Комменты чекнуты")
             rows=self.handler.bdAPI.showGoodNewComments()#получает новые и отмеченные для единовременной их отправки на почту
-            self.writeReport("Новые подходящие комменты")
             if len(rows)!=0:
                 host = "smtp.yandex.ru"
                 subject = "Test email from Python"
@@ -149,7 +133,10 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
                 error=0
                 self.writeReport("Найдено (%s) комментариев(комментарий)."%str(len(rows)))
                 self.send_email(rows,host, subject, to_addr, from_addr)
+            else:
+                self.writeReport("Подходящие комментарии не обнаружены.")
             self.handler.bdAPI.commentsUnNew()#комментарии прочитаны
+            self.writeReport("Успешный цикл авторежима.")
     #отправка сообщения на имейл
     def send_email(self,rows,host, subject, to_addr, from_addr): 
         body_text="На странице были отслежены следующие комментарии:\n"
@@ -175,9 +162,9 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         for comment in comments:
                 self.tableComments.setItem(row, 0,  QtWidgets.QTableWidgetItem(datetime.fromtimestamp(comment[2]).strftime("%d-%m-%Y %H:%M")))
                 self.tableComments.setItem(row, 1,  QtWidgets.QTableWidgetItem(comment[1]))
-                self.tableComments.setItem(row, 3,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
+                self.tableComments.setItem(row, 2,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
                 row += 1
-        #self.handler.bdAPI.checkComments()
+        self.setHeaderTittle()
         QMessageBox.about(self,"Уведомление","Поиск завершен")
     #поиск по новому словарю
     def searchButtonClick(self):
@@ -217,11 +204,19 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
     def searchNewCommentsClick(self):
       try:
         self.findNewComButton.setEnabled(False)
+        self.tableComments.clear()
         username=self.comboBoxAcc.currentText()
         self.handler=formHandler(username)
         self.handler.searchAndAddNewMediaItems()
         QMessageBox.about(self,"Уведомление","Поиск новых комментариев") 
-        self.handler.findAbcAllCommentsAndSendIt()
+        rows=self.handler.findAbcAllCommentsAndSendIt()
+        i=0
+        for comment in rows:
+                self.tableComments.setItem(i, 0,  QtWidgets.QTableWidgetItem(datetime.fromtimestamp(comment[2]).strftime("%d-%m-%Y %H:%M")))
+                self.tableComments.setItem(i, 1,  QtWidgets.QTableWidgetItem(comment[1]))
+                self.tableComments.setItem(i, 2,  QtWidgets.QTableWidgetItem(self.handler.bdAPI.getLinkByCommentId(comment[0])))
+                i += 1
+        self.setHeaderTittle()
         QMessageBox.about(self,"Уведомление","Поиск завершен")
         self.findNewComButton.setEnabled(True)
       except Exception as e:
@@ -264,7 +259,7 @@ class formHandler():
             max_id=-1
             errors=0
             try:
-                comments=self.f.takeCommentsWithoutCircle(row[0],20)
+                comments=self.f.takeCommentsWithoutCircle(row[0],60)
                 for item in comments:
                     try: 
                         self.bdAPI.addComment(item,row[0])    
@@ -289,7 +284,8 @@ class formHandler():
                     self.bdAPI.addComment(comment,row[0])#добавляем в базу новые комментарии
         self.bdAPI.checkNewComments()#отмечает все новые комменты по словарю
         rows=self.bdAPI.showGoodNewComments()#получает новые и отмеченные для единовременного их вывода на экран
-        self.bdAPI.commentsUnNew()#комментарии прочитаны
+        #self.bdAPI.commentsUnNew()#комментарии прочитаны ВЕРНУТЬ НА МЕСТО!!
+        return rows
     #перезагрузка базы
     def LoadAll(self,name):
         self.asyncLoadAllMediaInfo(name)  
@@ -302,16 +298,12 @@ class formHandler():
     #проверка на наличие новой записи стены
     def searchAndAddNewMediaItems(self):
         oldMediaIds=self.bdAPI.getMediaIds()
-        self.writeReport("ВЗятые старые ИД")
         newMediaIds=self.f.findNewFeed()
-        self.writeReport("Взята стена")
         oldMediaIds=list(map(lambda x: int(x[0]),oldMediaIds))
-        self.writeReport("Преобразованы")
         for media in newMediaIds:
             if media['pk'] in oldMediaIds:
                 break
             else:
-                self.bdAPI.addMediaItem(media)
-        self.writeReport("Окончено")                
+                self.bdAPI.addMediaItem(media)            
 if __name__ == '__main__':  # Если мы запускаем файл напрямую, а не импортируем
     main()  # то запускаем функцию main()
