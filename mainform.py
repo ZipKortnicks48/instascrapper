@@ -61,6 +61,9 @@ class Ui_Dialog(object):
         self.helpMenu=menubar.addMenu("Помощь")
         # toolbar = self.addToolBar('Exit')
         # toolbar.addAction(exitAction)
+        self.buttonStop = QtWidgets.QPushButton(Dialog)
+        self.buttonStop.setGeometry(QtCore.QRect(20, 570, 75, 23))
+        self.buttonStop.setObjectName("buttonStop")
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
 
@@ -83,3 +86,4 @@ class Ui_Dialog(object):
         self.autoButton.setText(_translate("Dialog", "Авторежим"))
         self.findNewComButton.setText(_translate("Dialog", "Проверить страницу"))
         self.showCommentsButton.setText(_translate("Dialog", "🕮"))
+        self.buttonStop.setText(_translate("Dialog", "Стоп"))

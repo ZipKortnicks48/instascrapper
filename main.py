@@ -14,13 +14,14 @@ from PyQt5.QtWidgets import QMessageBox, QSystemTrayIcon,QStyle,QAction,qApp,QMe
 import time
 import sched
 import smtplib
-import mailbook
+import subprocess
 from email.mime.text import MIMEText
 from email.header    import Header
 import threading
 from threading import Thread
 import schedule
 import abcform
+import mailbook
 class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,QtWidgets.QErrorMessage,QtWidgets.QHeaderView):
     def __init__(self):
         # Это здесь нужно для доступа к переменным, методам
@@ -32,6 +33,8 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         self.findNewComButton.pressed.connect(self.searchNewCommentsClickInThread)
         self.autoButton.pressed.connect(self.autoClick)
         self.buttonHand.pressed.connect(self.handSearch)
+        self.buttonStop.pressed.connect(self.stopClick)
+        self.buttonStop.setEnabled(False)
         #иконка трея
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(self.style().standardIcon(QStyle.SP_ComputerIcon))
@@ -83,12 +86,15 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
     #остановка автопроцесса
     def stopClick(self):
         self.startEvent=False
+        self.buttonStop.setEnabled(False)
+        QMessageBox.about(self,"Уведомление","Остановка авторежима. Программа остановится после завершения цикла проверки.")
     def enableButtons(self):
         self.autoButton.setEnabled(True)
         self.findNewComButton.setEnabled(True)
     #обработчик кнопки "Авторежим"
     def autoClick(self):
         self.startEvent=True
+        self.buttonStop.setEnabled(True)
         self.autoButton.setEnabled(False)
         self.findNewComButton.setEnabled(False)
         QMessageBox.about(self,"Уведомление","Запущен авто-режим. Некоторые действия недоступны. Уведомления об отслеживании будут приходить на почту.")
@@ -98,17 +104,27 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
     def jobThread(self):
         username=self.comboBoxAcc.currentText()
         self.handler=formHandler(username)
-        schedule.every(1).minutes.do(self.jobException)
+        schedule.every(2).minutes.do(self.jobException)
         while self.startEvent==True:
             schedule.run_pending()
             time.sleep(1)
-        #self.jobException()
+        self.autoButton.setEnabled(True)
+        self.findNewComButton.setEnabled(True)
     def jobException(self):
+        # try:
+        #     self.job()
+        # except Exception as e:
+        #     self.writeReport("Ошибка в цикле авторежима: "+str(e))
+        #     time.sleep(600)
+        #subprocess.run(['python','scrap.py'],timeout=1)
+        proc = subprocess.Popen(['python','scrap.py'])
         try:
-            self.job()
-        except Exception as e:
-            self.writeReport("Ошибка в цикле авторежима: "+str(e))
-            time.sleep(600)
+            self.writeReport("Начало процесса")
+            outs, errs = proc.communicate(timeout=900)
+        except subprocess.TimeoutExpired:
+            proc.terminate()
+            outs, errs = proc.communicate()
+            self.writeReport("Процесс завершился по таймауту.")
     def setHeaderTittle(self):
         self.tableComments.setHorizontalHeaderLabels(['Дата', 'Текст', 'Ссылка на запись'])
     #циклы авторежима
@@ -132,7 +148,6 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
             rows=self.handler.bdAPI.showGoodNewComments()#получает новые и отмеченные для единовременной их отправки на почту
             if len(rows)!=0:
                 host = "smtp.yandex.ru"
-                subject = "Test email from Python"
                 to_addr = self.handler.bdAPI.getMail()
                 from_addr = "instagram@rkvv.ru"
                 error=0
@@ -215,6 +230,7 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
             self.writeReport(str(e))
             QMessageBox.about(self,"Уведомление",str(e))
             self.findNewComButton.setEnabled(True)  
+            self.buttonStop.setEnabled(False)
     def searchNewCommentsClick(self):
       
         self.findNewComButton.setEnabled(False)
@@ -239,7 +255,6 @@ class App(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mainform.Ui_Dialog,
         self.findNewComButton.setEnabled(True)
         self.autoButton.setEnabled(True)
         self.searchButtonClick()
-       
 
 
     def writeReport(self,text):
@@ -278,9 +293,13 @@ class AppEmail(QtWidgets.QMainWindow, QtWidgets.QTableWidgetItem, mailbook.Ui_Di
         for word in words:
             self.textEdit.append(word[0])
     def saveWords(self):
-        s=self.textEdit.toPlainText()
-        strList=s.split('\n') 
-        self.bdAPI.updateMail(strList)
+        try:
+            s=self.textEdit.toPlainText()
+            strList=s.split('\n') 
+            self.bdAPI.updateMail(strList)
+            QMessageBox.about(self,"Обновление адресной книги","Адресная книга обновлена")
+        except Exception as e:
+            QMessageBox.about(self,"Обновление адресной книги",str(e))
 def main():
     app = QtWidgets.QApplication(sys.argv)  # Новый экземпляр QApplication
     window = App()  # Создаём объект класса ExampleApp

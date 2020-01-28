@@ -71,17 +71,13 @@ class scrapper():
     #проверка на наличие новой записи стены
     def searchAndAddNewMediaItems(self):
         oldMediaIds=self.bdAPI.getMediaIds()
-        self.writeReport("ВЗятые старые ИД")
         newMediaIds=self.f.findNewFeed()
-        self.writeReport("Взята стена")
         oldMediaIds=list(map(lambda x: int(x[0]),oldMediaIds))
-        self.writeReport("Преобразованы")
         for media in newMediaIds:
             if media['pk'] in oldMediaIds:
                 break
             else:
-                self.bdAPI.addMediaItem(media)
-        self.writeReport("Окончено")     
+                self.bdAPI.addMediaItem(media)  
 
 class App():
     def __init__(self):
@@ -115,24 +111,29 @@ class App():
             if len(rows)!=0:
                 host = "smtp.yandex.ru"
                 subject = "Test email from Python"
-                to_addr = "alex.sirokvasoff2011@yandex.ru"
+                to_addr = self.handler.bdAPI.getMail()
                 from_addr = "instagram@rkvv.ru"
                 error=0
                 self.handler.writeReport("Найдено (%s) комментариев(комментарий)."%str(len(rows)))
-                self.send_email(rows,host, subject, to_addr, from_addr)
+                self.send_email(rows,host,  to_addr, from_addr)
+            else:
+                self.handler.writeReport("Комментарии не обнаружены.")
             self.handler.bdAPI.commentsUnNew()#комментарии прочитаны
+            self.handler.writeReport("Успешный цикл авторежима.")
     #отправка сообщения на имейл
-    def send_email(self,rows,host, subject, to_addr, from_addr): 
+    def send_email(self,rows,host, to_addr, from_addr): 
+        to_addr=list(map(lambda x: x[0],to_addr))
         body_text="На странице были отслежены следующие комментарии:\n"
         for row in rows:
             body_text+="\nТекст комментария:\n%s\nСсылка на запись в инстаграм:\n%s\nВремя публикации:\n%s\n"%(row[1],self.handler.bdAPI.getLinkByCommentId(row[0]),datetime.fromtimestamp(row[2]).strftime("%d-%m-%Y %H:%M"))
         msg = MIMEText(body_text, 'plain', 'utf-8')
         msg['Subject'] = Header('Обнаружение комментариев', 'utf-8')
         msg['From'] = from_addr     
-        msg['To'] = to_addr
+        separator=", "
+        msg['To'] = separator.join(to_addr)
         server = smtplib.SMTP_SSL(host,port=465)
         server.login('instagram@rkvv.ru','asdqwe123')
-        server.sendmail(from_addr, [to_addr], msg.as_string())
+        server.sendmail(from_addr, to_addr, msg.as_string())
         server.quit()
         self.handler.writeReport("Успешная рассылка.")
 if __name__ == "__main__":
